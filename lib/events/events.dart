@@ -1,4 +1,11 @@
+import 'package:event_app/event_details/event_details.dart';
+import 'package:event_app/events/bloc/events_cubit.dart';
+import 'package:event_app/model/event_model.dart';
+import 'package:event_app/search/search.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import '../util/dateTime.dart';
 
 class Events extends StatefulWidget {
   const Events({super.key});
@@ -8,45 +15,75 @@ class Events extends StatefulWidget {
 }
 
 class _EventsState extends State<Events> {
-  final List<String> dataList = [
-    'Item 1',
-    'Item 2',
-    'Item 3',
-    'Item 4',
-    'Item 5',
-  ];
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          "Events",
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 24,
-            fontWeight: FontWeight.w600,
+    return BlocProvider(
+      create: (context) => EventsCubit(),
+      child: Scaffold(
+          appBar: AppBar(
+            title: Padding(
+              padding: const EdgeInsets.only(left: 10),
+              child: Text(
+                "Events",
+                style: TextStyle(
+                  color: Color.fromRGBO(18, 13, 38, 1),
+                  fontSize: 24,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            actions: [
+              InkWell(
+                onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  Search(),
+                            ),
+                          );
+                        },
+                
+                child: SvgPicture.asset('assets/icons/search_black.svg')),
+              SizedBox(
+                width: 20,
+              ),
+              Icon(Icons.more_vert, color: Color.fromRGBO(18, 13, 38, 1)),
+              SizedBox(
+                width: 20,
+              ),
+            ],
+            elevation: 0,
+            backgroundColor: Colors.transparent,
           ),
-        ),
-        actions: [
-          Icon(Icons.search),
-          SizedBox(
-            width: 20,
-          ),
-          Icon(Icons.more_vert),
-          SizedBox(
-            width: 20,
-          ),
-        ],
-        foregroundColor: Colors.black,
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-      ),
-      body: ListView.builder(
-        itemCount: 20,
-        itemBuilder: (BuildContext context, int index) {
-          return EventTile(dataList: dataList);
-        },
-      ),
+          body: BlocBuilder<EventsCubit, EventsState>(
+            builder: (context, state) {
+              if (state.state == EventsStateEnum.loading) {
+                return Center(child: CircularProgressIndicator());
+              } else if (state.state == EventsStateEnum.loaded) {
+                return ListView.builder(
+                  itemCount: state.eventList?.length ?? 0,
+                  itemBuilder: (BuildContext context, int index) {
+                    return InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  EventDetail(event: state.eventList![index]),
+                            ),
+                          );
+                        },
+                        child: EventTile(event: state.eventList![index]));
+                  },
+                );
+              } else if (state.state == EventsStateEnum.error) {
+                return Center(child: Text('Error: ${state.error}'));
+              } else {
+                return Center(child: Text('Loading Events'));
+              }
+            },
+          )),
     );
   }
 }
@@ -54,51 +91,81 @@ class _EventsState extends State<Events> {
 class EventTile extends StatelessWidget {
   const EventTile({
     super.key,
-    required this.dataList,
+    required this.event,
   });
 
-  final List<String> dataList;
+  final Event event;
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 1, // Set the elevation for the Card
+      elevation: 1,
       shape: RoundedRectangleBorder(
-        borderRadius:
-            BorderRadius.circular(12.0), // Adjust the radius as needed
+        borderRadius: BorderRadius.circular(12.0),
       ),
-      margin: EdgeInsets.symmetric(
-          vertical: 8, horizontal: 16), // Adjust the gap here
-      child: ListTile(
-        leading: CircleAvatar(),
-        title: Text('Wed, Apr 28 • 5:30 PM',
-            style: TextStyle(
-                fontSize: 13,
-                color: Color.fromRGBO(86, 105, 255, 1),
-                fontWeight: FontWeight.w400)),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(
-              height: 5,
-            ),
-            Text('''Jo Malone London’s Mother’s Day Presents''',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
-            SizedBox(
-              height: 10,
-            ),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.location_on),
-                Text('''Jo Malone London’s Mother’s Day Presents''',
-                    style:
-                        TextStyle(fontSize: 13, fontWeight: FontWeight.w400)),
-              ],
-            ),
-          ],
+      margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical:8),
+        child: ListTile(
+          leading: Image.network(
+            event.bannerImage,
+            loadingBuilder: (BuildContext context, Widget child,
+                ImageChunkEvent? loadingProgress) {
+              if (loadingProgress == null) {
+                return child;
+              }
+              return CircularProgressIndicator(
+                value: loadingProgress.expectedTotalBytes != null
+                    ? loadingProgress.cumulativeBytesLoaded /
+                        loadingProgress.expectedTotalBytes!
+                    : null,
+              );
+            },
+          ),
+          title: Text(formatDateTime(event.dateTime),
+              style: TextStyle(
+                  fontSize: 13,
+                  color: Color.fromRGBO(86, 105, 255, 1),
+                  fontWeight: FontWeight.w400)),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                height: 5,
+              ),
+              Text(event.title,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                    color: Color.fromRGBO(18, 13, 38, 1),
+                  )),
+              SizedBox(
+                height: 10,
+              ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SvgPicture.asset('assets/icons/map-pin.svg'),
+                  SizedBox(width: 5,),
+                  Text(
+                      event.venueName +
+                          ' • ' +
+                          event.venueCity +
+                          ', ' +
+                          event.venueCountry,
+                      overflow: TextOverflow.fade,
+                      maxLines: 1,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w400,
+                        color: Color.fromRGBO(116, 118, 136, 1),
+                      )),
+                ],
+              ),
+            ],
+          ),
+          dense: false,
         ),
-        dense: false,
       ),
     );
   }
