@@ -15,10 +15,25 @@ class Events extends StatefulWidget {
 }
 
 class _EventsState extends State<Events> {
+  late EventsCubit eventsCubit;
+
+  @override
+  void initState() {
+    super.initState();
+    eventsCubit = EventsCubit();
+    eventsCubit.fetchEvents();
+  }
+
+  @override
+  void dispose() {
+    eventsCubit.close();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => EventsCubit(),
+      create: (context) => eventsCubit,
       child: Scaffold(
           appBar: AppBar(
             title: Padding(
@@ -34,17 +49,15 @@ class _EventsState extends State<Events> {
             ),
             actions: [
               InkWell(
-                onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  Search(),
-                            ),
-                          );
-                        },
-                
-                child: SvgPicture.asset('assets/icons/search_black.svg')),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => Search(),
+                      ),
+                    );
+                  },
+                  child: SvgPicture.asset('assets/icons/search_black.svg')),
               SizedBox(
                 width: 20,
               ),
@@ -105,7 +118,7 @@ class EventTile extends StatelessWidget {
       ),
       margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       child: Padding(
-        padding: EdgeInsets.symmetric(vertical:8),
+        padding: EdgeInsets.symmetric(vertical: 8),
         child: ListTile(
           leading: Image.network(
             event.bannerImage,
@@ -146,8 +159,10 @@ class EventTile extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   SvgPicture.asset('assets/icons/map-pin.svg'),
-                  SizedBox(width: 5,),
-                  Flexible (
+                  SizedBox(
+                    width: 5,
+                  ),
+                  Flexible(
                     child: Text(
                         event.venueName +
                             ' • ' +

@@ -35,15 +35,20 @@ class _SearchState extends State<Search> {
       create: (context) => searchBloc,
       child: Scaffold(
           appBar: AppBar(
-            leading: Padding(
-              padding: const EdgeInsets.only(
-                left: 16,
-                right: 5,
-                top: 5,
-                bottom: 5,
+            leading: InkWell(
+              onTap: () {
+                Navigator.pop(context);
+              },
+              child: Padding(
+                padding: const EdgeInsets.only(
+                  left: 16,
+                  right: 5,
+                  top: 5,
+                  bottom: 5,
+                ),
+                child: Icon(Icons.arrow_back,
+                    color: Color.fromRGBO(18, 13, 38, 1)),
               ),
-              child:
-                  Icon(Icons.arrow_back, color: Color.fromRGBO(18, 13, 38, 1)),
             ),
             title: Text(
               "Search",
@@ -64,23 +69,23 @@ class _SearchState extends State<Search> {
                     children: [
                       SvgPicture.asset('assets/icons/search_blue.svg'),
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal:5),
-                        child: Text('|',
-                        style:TextStyle(
-                                  color: Color.fromRGBO(121, 116, 231, 1)
-                      ,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w400,
-                                ),
+                        padding: const EdgeInsets.symmetric(horizontal: 5),
+                        child: Text(
+                          '|',
+                          style: TextStyle(
+                            color: Color.fromRGBO(121, 116, 231, 1),
+                            fontSize: 20,
+                            fontWeight: FontWeight.w400,
+                          ),
                         ),
                       ),
                       Flexible(
                         child: TextField(
-                          style:  TextStyle(
-                                color: Color.fromRGBO(0, 0, 0, 1),
-                                fontSize: 20,
-                                fontWeight: FontWeight.w400,
-                              ),
+                          style: TextStyle(
+                            color: Color.fromRGBO(0, 0, 0, 1),
+                            fontSize: 20,
+                            fontWeight: FontWeight.w400,
+                          ),
                           onChanged: (text) {
                             searchBloc.add(PerformSearch(text));
                           },

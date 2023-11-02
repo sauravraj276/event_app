@@ -23,7 +23,7 @@ class _EventDetailState extends State<EventDetail> {
             Positioned(
               top: MediaQuery.of(context).viewPadding.top,
               child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+                padding: EdgeInsets.symmetric(horizontal:16, vertical: 5),
                 width: MediaQuery.of(context).size.width,
                 child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -37,7 +37,7 @@ class _EventDetailState extends State<EventDetail> {
                               Navigator.pop(context);
                             },
                             child: Padding(
-                              padding: const EdgeInsets.all(8.0),
+                              padding: const EdgeInsets.symmetric(horizontal:5),
                               child: Icon(
                                 Icons.arrow_back,
                                 size: 24,
@@ -219,6 +219,8 @@ class _EventDetailState extends State<EventDetail> {
                   padding: const EdgeInsets.only(top: 20),
                   child: Text(
                     widget.event.description,
+                    overflow: TextOverflow.fade,
+                     maxLines: 3,
                     style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w400,
@@ -234,6 +236,7 @@ class _EventDetailState extends State<EventDetail> {
         height: 60,
         width: 270,
         padding: EdgeInsets.symmetric(horizontal: 20),
+        margin: EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
           color: Color.fromRGBO(86, 105, 255, 1),
@@ -265,7 +268,7 @@ class _EventDetailState extends State<EventDetail> {
           ],
         ),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 }

@@ -40,9 +40,7 @@ class FetchEventsEvent extends EventsEvent {}
 
 // Define the EventsCubit
 class EventsCubit extends Cubit<EventsState> {
-  EventsCubit() : super(EventsState(state: EventsStateEnum.initial)) {
-    fetchEvents();
-  }
+  EventsCubit() : super(EventsState(state: EventsStateEnum.initial));
 
   Future<void> fetchEvents() async {
     emit(EventsState(state: EventsStateEnum.loading));
