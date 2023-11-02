@@ -1,6 +1,6 @@
 import 'package:event_app/event_details/event_details.dart';
-import 'package:event_app/events/bloc/events_cubit.dart';
 import 'package:event_app/model/event_model.dart';
+import 'package:event_app/search/bloc/search_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -14,10 +14,25 @@ class Search extends StatefulWidget {
 }
 
 class _SearchState extends State<Search> {
+  late SearchBloc searchBloc;
+
+  @override
+  void initState() {
+    super.initState();
+    searchBloc = SearchBloc();
+    searchBloc.add(PerformSearch(''));
+  }
+
+  @override
+  void dispose() {
+    searchBloc.close();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => EventsCubit(),
+      create: (context) => searchBloc,
       child: Scaffold(
           appBar: AppBar(
             leading: Padding(
@@ -43,44 +58,72 @@ class _SearchState extends State<Search> {
           ),
           body: Column(
             children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: TextField(
-                  decoration: InputDecoration(
-                      hintText: 'Type Event Name',
-                      hintStyle: TextStyle(
-                        color: Color.fromRGBO(18, 13, 38, 1),
-                        fontSize: 24,
-                        fontWeight: FontWeight.w500,
+              Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    children: [
+                      SvgPicture.asset('assets/icons/search_blue.svg'),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal:5),
+                        child: Text('|',
+                        style:TextStyle(
+                                  color: Color.fromRGBO(121, 116, 231, 1)
+                      ,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w400,
+                                ),
+                        ),
                       ),
-                      border: InputBorder.none,
-                      prefix: SvgPicture.asset('assets/icons/search_blue.svg'),
-                      alignLabelWithHint: true),
-                ),
-              ),
+                      Flexible(
+                        child: TextField(
+                          style:  TextStyle(
+                                color: Color.fromRGBO(0, 0, 0, 1),
+                                fontSize: 20,
+                                fontWeight: FontWeight.w400,
+                              ),
+                          onChanged: (text) {
+                            searchBloc.add(PerformSearch(text));
+                          },
+                          decoration: InputDecoration(
+                              hintText: 'Type Event Name',
+                              hintStyle: TextStyle(
+                                color: Color.fromRGBO(0, 0, 0, 0.4),
+                                fontSize: 20,
+                                fontWeight: FontWeight.w400,
+                              ),
+                              border: InputBorder.none,
+                              alignLabelWithHint: true),
+                        ),
+                      ),
+                    ],
+                  )),
               Expanded(
-                child: BlocBuilder<EventsCubit, EventsState>(
+                child: BlocBuilder<SearchBloc, SearchState>(
                   builder: (context, state) {
-                    if (state.state == EventsStateEnum.loading) {
+                    if (state.state == SearchStateEnum.loading) {
                       return Center(child: CircularProgressIndicator());
-                    } else if (state.state == EventsStateEnum.loaded) {
-                      return ListView.builder(
-                        itemCount: state.eventList?.length ?? 0,
-                        itemBuilder: (BuildContext context, int index) {
-                          return InkWell(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => EventDetail(
-                                        event: state.eventList![index]),
-                                  ),
-                                );
+                    } else if (state.state == SearchStateEnum.loaded) {
+                      return state.searchResults?.length == 0
+                          ? Center(child: Text('No Result Found'))
+                          : ListView.builder(
+                              itemCount: state.searchResults?.length ?? 0,
+                              itemBuilder: (BuildContext context, int index) {
+                                return InkWell(
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => EventDetail(
+                                              event:
+                                                  state.searchResults![index]),
+                                        ),
+                                      );
+                                    },
+                                    child: EventTile(
+                                        event: state.searchResults![index]));
                               },
-                              child: EventTile(event: state.eventList![index]));
-                        },
-                      );
-                    } else if (state.state == EventsStateEnum.error) {
+                            );
+                    } else if (state.state == SearchStateEnum.error) {
                       return Center(child: Text('Error: ${state.error}'));
                     } else {
                       return Center(child: Text('Loading Events'));
@@ -145,31 +188,6 @@ class EventTile extends StatelessWidget {
                     fontWeight: FontWeight.w500,
                     color: Color.fromRGBO(18, 13, 38, 1),
                   )),
-              SizedBox(
-                height: 10,
-              ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SvgPicture.asset('assets/icons/map-pin.svg'),
-                  SizedBox(
-                    width: 5,
-                  ),
-                  Text(
-                      event.venueName +
-                          ' • ' +
-                          event.venueCity +
-                          ', ' +
-                          event.venueCountry,
-                      overflow: TextOverflow.fade,
-                      maxLines: 1,
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w400,
-                        color: Color.fromRGBO(116, 118, 136, 1),
-                      )),
-                ],
-              ),
             ],
           ),
           dense: false,

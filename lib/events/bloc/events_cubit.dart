@@ -61,7 +61,6 @@ class EventsCubit extends Cubit<EventsState> {
         'https://sde-007.api.assignment.theinternetfolks.works/v1/event'));
 
     if (response.statusCode == 200) {
-      // final List<dynamic> data = json.decode(response.body);
       final Map<String, dynamic> json = jsonDecode(response.body);
 
       final List<dynamic> eventData = json['content']['data'];

@@ -147,19 +147,21 @@ class EventTile extends StatelessWidget {
                 children: [
                   SvgPicture.asset('assets/icons/map-pin.svg'),
                   SizedBox(width: 5,),
-                  Text(
-                      event.venueName +
-                          ' • ' +
-                          event.venueCity +
-                          ', ' +
-                          event.venueCountry,
-                      overflow: TextOverflow.fade,
-                      maxLines: 1,
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w400,
-                        color: Color.fromRGBO(116, 118, 136, 1),
-                      )),
+                  Flexible (
+                    child: Text(
+                        event.venueName +
+                            ' • ' +
+                            event.venueCity +
+                            ', ' +
+                            event.venueCountry,
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w400,
+                          color: Color.fromRGBO(116, 118, 136, 1),
+                        )),
+                  ),
                 ],
               ),
             ],
